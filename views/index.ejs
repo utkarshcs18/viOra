@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>viOra - Music</title>
+    <!-- 1. CSS Internal (No file needed) -->
+    <style>
+        body { background: #000; color: #1DB954; font-family: sans-serif; display: flex; margin: 0; height: 100vh; }
+        .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 20px; }
+        .main { flex: 1; background: linear-gradient(#121212, #000); padding: 40px; color: white; }
+        .player-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: #181818; border-top: 1px solid #282828; display: flex; align-items: center; padding: 0 20px; }
+        input { width: 100%; padding: 12px; border-radius: 20px; border: none; background: #242424; color: white; margin-bottom: 20px; }
+        video { width: 100%; border-radius: 10px; background: #222; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>viOra</h1>
+        <p>📍 <span id="city">Detecting...</span></p>
+        <video id="video" autoplay muted></video>
+        <button id="moodBtn" style="width:100%; padding:10px; border-radius:20px; background:#1DB954; cursor:pointer; font-weight:bold;">Start Mood Sync</button>
+        <h3 id="moodLabel" style="text-align:center; margin-top:10px;">Mood: OFF</h3>
+    </div>
+
+    <div class="main">
+        <input type="text" id="search" placeholder="Search for music...">
+        <div id="results" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:20px;">
+            <!-- If this shows, EJS is working! -->
+            <p>Type a song name above and press Enter.</p>
+        </div>
+    </div>
+
+    <div class="player-bar">
+        <div id="yt-player"></div>
+        <div id="songTitle">No song playing</div>
+    </div>
+
+    <!-- 2. Use CDN links so you don't need local files -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        let player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', { height: '0', width: '0' });
+        }
+
+        // Search Logic
+        document.getElementById('search').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const res = await fetch('/api/music/search?q=' + e.target.value);
+                const songs = await res.json();
+                document.getElementById('results').innerHTML = songs.map(s => `
+                    <div onclick="play('${s.id.videoId}', '${s.snippet.title}')" style="cursor:pointer; background:#181818; padding:10px; border-radius:10px;">
+                        <img src="${s.snippet.thumbnails.medium.url}" style="width:100%;">
+                        <p style="font-size:12px;">${s.snippet.title}</p>
+                    </div>
+                `).join('');
+            }
+        });
+
+        function play(id, title) {
+            player.loadVideoById(id);
+            document.getElementById('songTitle').innerText = title;
+        }
+
+        // Location
+        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+            document.getElementById('city').innerText = d.city + ", " + d.country_name;
+        });
+
+        // Mood Logic (Using CDN faceapi)
+        document.getElementById('moodBtn').onclick = async () => {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            
+            await faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+            await faceapi.nets.faceExpressionNet.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+            
+            setInterval(async () => {
+                const result = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+                if (result.length > 0) {
+                    const mood = Object.keys(result[0].expressions).reduce((a, b) => result[0].expressions[a] > result[0].expressions[b] ? a : b);
+                    document.getElementById('moodLabel').innerText = "Mood: " + mood.toUpperCase();
+                }
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
