@@ -430,7 +430,7 @@ body::before {
 }
 
 .np-thumbnail {
-    width: 300px;
+    width: 550px;
     height: 300px;
     border-radius: 20px;
     object-fit: cover;

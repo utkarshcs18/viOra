@@ -175,8 +175,8 @@ document.getElementById('cameraIcon').addEventListener('click', () => {
 });
 
 document.getElementById('creditIcon').addEventListener('click', () => {
-    if (confirm('Open GitHub ?')) {
-        window.open('https://github.com/utkarshcs18/', '_blank');
+    if (confirm('Open Profile?')) {
+        window.open('https://utkarshvoid.vercel.app/', '_blank');
     }
 });
 
