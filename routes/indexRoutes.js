@@ -1,19 +1,39 @@
 const express = require('express');
 const router = express.Router();
+const authenticate = require('../middleware/auth');
+
+const jwt = require('jsonwebtoken');
+
+const User = require('../models/User');
 
 // This renders the main Music Player page
-router.get('/', (req, res) => {
-    res.render('index'); 
+router.get('/', async (req, res) => {
+    let isAuthenticated = false;
+    let userEmail = '';
+    let userName = '';
+    const token = req.cookies ? req.cookies.token : null;
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.SESSION_SECRET || 'viora_secret_key');
+            const user = await User.findById(decoded.id);
+            if (user) {
+                isAuthenticated = true;
+                userEmail = user.email;
+                userName = user.email.split('@')[0];
+            }
+        } catch (e) {}
+    }
+    res.render('index', { isAuthenticated, userEmail, userName }); 
 });
 
-// This renders the Login page
+// This renders the Login/Signup page
 router.get('/login', (req, res) => {
-    res.render('login');
+    res.render('auth');
 });
 
-// This renders the Signup page
+// This renders the Login/Signup page in signup mode
 router.get('/signup', (req, res) => {
-    res.render('signup');
+    res.render('auth');
 });
 
 module.exports = router;

@@ -14,7 +14,8 @@ exports.register = async (req, res) => {
     user = new User({ email, password: hashedPassword });
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, 'secretToken', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.SESSION_SECRET || 'viora_secret_key', { expiresIn: '1h' });
+    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000 });
     res.json({ token, user: { id: user._id, email: user.email } });
   } catch (err) {
     res.status(500).send('Server Error');
@@ -30,9 +31,15 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
 
-    const token = jwt.sign({ id: user._id }, 'secretToken', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.SESSION_SECRET || 'viora_secret_key', { expiresIn: '1h' });
+    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000 });
     res.json({ token, user: { id: user._id, email: user.email } });
   } catch (err) {
     res.status(500).send('Server Error');
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/');
 };
