@@ -1,3 +1,6 @@
 description.txt
 .env
 node_modules/
+*.log
+.DS_Store
+package-lock.json

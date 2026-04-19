@@ -5,20 +5,19 @@ A full-stack music streaming application that uses AI to detect facial expressio
 ## Features
 
 ### Core Music Player
-- **YouTube Integration**: Search and stream music from YouTube
-- **Smart Autoplay**: Automatically plays related songs when current song ends
-- **Queue Management**: View and manage upcoming songs
-- **Music Controls**: Play, pause, skip, and volume control
+- **Headless Scraping Engine**: Streams audio from YouTube via `yt-search` without needing paid API quotas
+- **Custom User Queue**: Allows users to manually line up multiple tracks in an 'Up Next' frosted-glass panel
+- **Smart Autoplay**: Automatically generates dynamic 'Artist Radio' queues when your manual queue runs out
+- **Music Controls**: Full playback capabilities, seeking, skipping, and volume control
 
 ### AI Mood Detection
-- **Facial Recognition**: Uses webcam to detect emotions (Happy, Sad, Angry, Neutral, etc.)
-- **Smart Recommendations**: Maps emotions to music categories
-- **Real-time Updates**: Dynamically updates playlists based on mood changes
+- **Facial Recognition**: Uses the webcam and `face-api.js` to detect human emotions (Happy, Sad, Angry, Neutral, Surprised)
+- **Smart Recommendations**: Auto-fetches a customized, tailored playlist the millisecond an emotion is detected
+- **Battery-Saving**: Instantly shuts off the webcam and media tracks once the mood is synced to preserve CPU/battery
 
 ### User Interface
-- **Spotify-Inspired Design**: Modern, clean light theme interface
-- **Geolocation Display**: Shows user's current city and country
-- **Responsive Design**: Works on desktop and mobile devices
+- **Premium Glassmorphism**: Stunning, responsive UI utilizing CSS backdrop filters over an animated, pulsing abstract background
+- **Responsive Design**: Flawlessly adapts to laptops and desktops with resilient flex layouts
 
 ### User Features
 - **Authentication**: Secure login and signup system
@@ -30,28 +29,25 @@ A full-stack music streaming application that uses AI to detect facial expressio
 
 ### Backend
 - **Node.js** with Express.js (MVC Architecture)
-- **MongoDB** for user data and playlists
-- **JWT** for authentication
-- **YouTube Data API v3** for music streaming
+- **MongoDB** for secure user data and liked song persistence
+- **JWT** (JSON Web Tokens) for authentication
+- **yt-search** for real-time web scraping of global music charts and searches without API limitations
 
 ### Frontend
-- **EJS** for server-side rendering
-- **Vanilla JavaScript** with modern ES6+ features
-- **CSS3** with animations and transitions
-- **face-api.js** for emotion detection
+- **EJS** for scalable server-side rendering
+- **Vanilla JavaScript** managing dynamic playback state and intelligent queue logic
+- **Vanilla CSS3** featuring complex animations, transitions, and glassmorphism styling
+- **face-api.js** running client-side for ultra-fast emotion detection
 
-### AI & APIs
-- **YouTube Data API v3** for music search and streaming
-- **YouTube IFrame Player API** for playback
-- **face-api.js** for facial expression recognition
-- **IP Geolocation API** for location detection
+### APIs & Libraries
+- **YouTube IFrame Player API** for seamless audio playback and state tracking
+- **face-api.js** utilizing pre-trained neural networks for facial expression recognition
 
 ## Installation
 
 ### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB (running locally or MongoDB Atlas)
-- YouTube Data API v3 key
 
 ### Setup Steps
 
@@ -71,24 +67,16 @@ A full-stack music streaming application that uses AI to detect facial expressio
    ```env
    PORT=5000
    MONGO_URI=mongodb://127.0.0.1:27017/viora
-   YOUTUBE_API_KEY=your_youtube_api_key_here
    SESSION_SECRET=viora_secret_key
    ```
 
-4. **YouTube API Setup**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select existing one
-   - Enable YouTube Data API v3
-   - Create credentials (API Key)
-   - Copy the API key to your `.env` file
-
-5. **Start MongoDB**
+4. **Start MongoDB**
    ```bash
    # For local MongoDB
    mongod
    ```
 
-6. **Run the application**
+5. **Run the application**
    ```bash
    # Development mode with auto-restart
    npm run dev
@@ -97,7 +85,7 @@ A full-stack music streaming application that uses AI to detect facial expressio
    npm start
    ```
 
-7. **Access the app**
+6. **Access the app**
    Open your browser and navigate to `http://localhost:5000`
 
 ## API Endpoints
@@ -150,9 +138,8 @@ viOra/
 ?? public/               # Static assets (CSS, JS, images)
 |
 ?? views/
-|   ?? index_enhanced.ejs # Main music player interface
-|   ?? login.ejs         # Login page
-|   ?? signup.ejs        # Signup page
+|   ?? index.ejs         # Main music player interface
+|   ?? auth.ejs          # Login and Signup unified page
 |
 ?? .env                  # Environment variables
 ?? package.json          # Dependencies and scripts
