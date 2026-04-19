@@ -1,71 +1,74 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 const yts = require('yt-search');
 
 const moodSearchTerms = {
-    happy: 'bollywood upbeat happy party songs hindi',
-    sad: 'bollywood sad emotional songs hindi',
-    angry: 'bollywood intense rock rap hindi',
-    neutral: 'bollywood chill lofi indie hindi',
-    surprised: 'bollywood trending pop hindi'
+    happy: [
+        'latest bollywood party song official video t-series',
+        'bollywood upbeat dance hits 2026 official',
+        'hindi trending party songs official music video'
+    ],
+    sad: [
+        'latest bollywood sad song arijit singh official video',
+        'hindi emotional heartbreak songs official music video',
+        'trending sad songs 2026 bollywood official'
+    ],
+    angry: [
+        'bollywood rock song official video',
+        'intense rap hindi official video',
+        'hindi rock anthem official music video'
+    ],
+    neutral: [
+        'bollywood lofi chill track official video',
+        'hindi indie pop official music video',
+        'relaxing hindi acoustic songs official'
+    ],
+    surprised: [
+        'latest hindi pop song official video',
+        'bollywood trending hit official music video',
+        'viral hindi song 2026 official video'
+    ]
 };
 
-const CACHE_FILE = path.join(__dirname, '../data/apiCache.json');
-const CACHE_DURATION = 60 * 60 * 1000 * 24; // 24 hours in ms
-
-// Load cache from file if it exists
-let cache = {};
-try {
-    if (fs.existsSync(CACHE_FILE)) {
-        cache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
-    } else {
-        // Create data directory if not exists
-        const dataDir = path.join(__dirname, '../data');
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-    }
-} catch (e) {
-    console.error("Cache load error:", e);
-}
-
-function saveCache() {
-    try {
-        fs.writeFileSync(CACHE_FILE, JSON.stringify(cache));
-    } catch (e) {
-        console.error("Cache save error:", e);
-    }
-}
+const homeChartQueries = [
+    'latest hindi song official video t-series zee music',
+    'new bollywood hit songs 2026 official video',
+    'trending indian pop songs 2026 official',
+    'global top 50 official music video'
+];
 
 exports.searchMusic = async (req, res) => {
     try {
         const { q, mood, type } = req.query;
 
-        const cacheKey = type === 'chart' ? 'chart' : (q || mood || 'default');
-        if (cache[cacheKey] && (Date.now() - cache[cacheKey].timestamp < CACHE_DURATION)) {
-            console.log(`? Serving from PERSISTENT cache: ${cacheKey}`);
-            return res.json(cache[cacheKey].data);
-        }
-
-        let searchQuery = q;
+        let queriesToRun = [];
         if (type === 'chart') {
-            console.log(`? Fetching Top Charts via Scraper...`);
-            searchQuery = 'top hit bollywood songs india official music video';
+            queriesToRun = homeChartQueries;
         } else if (mood && moodSearchTerms[mood.toLowerCase()]) {
-            searchQuery = moodSearchTerms[mood.toLowerCase()];
-        } else if (!searchQuery) {
-            searchQuery = 'trending music official';
+            queriesToRun = moodSearchTerms[mood.toLowerCase()];
+        } else if (q) {
+            queriesToRun = [q];
+        } else {
+            queriesToRun = ['trending music official'];
         }
 
-        console.log(`? Scraping YouTube for: ${searchQuery}`);
+
         
-        // Use yt-search to bypass Google API Quotas completely!
-        const r = await yts(searchQuery);
+        // Execute all queries in parallel
+        const results = await Promise.all(queriesToRun.map(query => yts(query)));
         
-        // Filter out Shorts (< 70s) and format to match exactly what the frontend expects
-        let items = r.videos
-            .filter(v => v.seconds >= 70) 
+        let allVideos = [];
+        results.forEach(r => allVideos.push(...r.videos));
+        
+        // Deduplicate videos
+        const uniqueMap = new Map();
+        allVideos.forEach(v => {
+            if (!uniqueMap.has(v.videoId)) {
+                uniqueMap.set(v.videoId, v);
+            }
+        });
+        
+        // Filter and limit to 50 for more rows
+        let items = Array.from(uniqueMap.values())
+            .filter(v => v.seconds >= 70 && v.seconds <= 600)
             .map(v => ({
                 id: { videoId: v.videoId },
                 snippet: {
@@ -76,13 +79,7 @@ exports.searchMusic = async (req, res) => {
             }))
             .slice(0, 50);
 
-        console.log(`? Found ${items.length} valid songs`);
-        
-        cache[cacheKey] = {
-            data: items,
-            timestamp: Date.now()
-        };
-        saveCache(); // Persist to disk
+
         
         res.json(items);
     } catch (err) {
@@ -100,6 +97,7 @@ exports.getRelatedVideos = async (req, res) => {
             return res.status(500).json({ error: "API Key not configured" });
         }
 
+        const axios = require('axios');
         const response = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
             params: {
                 part: 'snippet',
@@ -126,6 +124,7 @@ exports.getVideoDetails = async (req, res) => {
             return res.status(500).json({ error: "API Key not configured" });
         }
 
+        const axios = require('axios');
         const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
             params: {
                 part: 'snippet,contentDetails,statistics',
@@ -138,5 +137,14 @@ exports.getVideoDetails = async (req, res) => {
     } catch (err) {
         console.error("Video Details Error:", err.response ? err.response.data : err.message);
         res.status(500).json({ error: "Failed to get video details" });
+    }
+};
+
+exports.getMoodPlaylist = async (req, res) => {
+    try {
+        req.query.mood = req.params.mood;
+        return exports.searchMusic(req, res);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get mood playlist" });
     }
 };

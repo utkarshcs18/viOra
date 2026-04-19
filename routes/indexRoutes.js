@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
             if (user) {
                 isAuthenticated = true;
                 userEmail = user.email;
-                userName = user.email.split('@')[0];
+                userName = user.name ? user.name : user.email.split('@')[0];
             }
         } catch (e) {}
     }
