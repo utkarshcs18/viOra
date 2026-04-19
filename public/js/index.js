@@ -175,7 +175,9 @@ document.getElementById('cameraIcon').addEventListener('click', () => {
 });
 
 document.getElementById('creditIcon').addEventListener('click', () => {
-    alert('Created by Utkarsh Kumar. Thank you for using viOra!');
+    if (confirm('Open GitHub ?')) {
+        window.open('https://github.com/utkarshcs18/', '_blank');
+    }
 });
 
 let moodInterval;
