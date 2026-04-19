@@ -1,6 +1,6 @@
 # viOra - Mood-Based Music App
 
-A full-stack music streaming application that uses AI to detect facial expressions and recommend music accordingly. Features a Spotify-inspired interface with YouTube as the primary streaming source.
+A full-stack music streaming application that uses AI to detect facial expressions and recommend music accordingly with YouTube as the primary streaming source.
 
 ## Features
 
@@ -66,14 +66,15 @@ A full-stack music streaming application that uses AI to detect facial expressio
    Create a `.env` file in the root directory:
    ```env
    PORT=5000
-   MONGO_URI=mongodb://127.0.0.1:27017/viora
+   MONGO_URI=mongodb://127.0.0.1:27017/name_Your_DB
    SESSION_SECRET=viora_secret_key
+   YOUTUBE_API_KEY=YOUR_YOUTUBE_API_KEY
    ```
 
 4. **Start MongoDB**
    ```bash
    # For local MongoDB
-   mongod
+   mongosh
    ```
 
 5. **Run the application**
@@ -225,7 +226,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - **YouTube Data API** for providing music streaming capabilities
 - **face-api.js** for facial emotion recognition
-- **Spotify** for UI design inspiration
 - **MongoDB** for data storage solution
 
 ## Support
