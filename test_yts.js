@@ -13,7 +13,6 @@ async function run() {
     let allVideos = [];
     results.forEach(r => allVideos.push(...r.videos));
     
-    // Deduplicate by videoId
     const uniqueMap = new Map();
     allVideos.forEach(v => {
         if (!uniqueMap.has(v.videoId)) {

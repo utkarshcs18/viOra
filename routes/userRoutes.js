@@ -10,7 +10,6 @@ const {
   getPlaylists
 } = require('../controllers/userController');
 
-// All user routes require authentication (handled in server or router level)
 router.use(authenticate);
 
 router.post('/history', addToHistory);

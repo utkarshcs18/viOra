@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
 
-// This renders the main Music Player page
 router.get('/', async (req, res) => {
     let isAuthenticated = false;
     let userEmail = '';
@@ -26,12 +25,10 @@ router.get('/', async (req, res) => {
     res.render('index', { isAuthenticated, userEmail, userName }); 
 });
 
-// This renders the Login/Signup page
 router.get('/login', (req, res) => {
     res.render('auth');
 });
 
-// This renders the Login/Signup page in signup mode
 router.get('/signup', (req, res) => {
     res.render('auth');
 });

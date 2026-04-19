@@ -52,13 +52,11 @@ exports.searchMusic = async (req, res) => {
 
 
         
-        // Execute all queries in parallel
         const results = await Promise.all(queriesToRun.map(query => yts(query)));
         
         let allVideos = [];
         results.forEach(r => allVideos.push(...r.videos));
         
-        // Deduplicate videos
         const uniqueMap = new Map();
         allVideos.forEach(v => {
             if (!uniqueMap.has(v.videoId)) {
@@ -66,7 +64,6 @@ exports.searchMusic = async (req, res) => {
             }
         });
         
-        // Filter and limit to 50 for more rows
         let items = Array.from(uniqueMap.values())
             .filter(v => v.seconds >= 70 && v.seconds <= 600)
             .map(v => ({

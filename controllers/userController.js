@@ -7,10 +7,8 @@ exports.addToHistory = async (req, res) => {
     
     if (!user) return res.status(404).json({ msg: 'User not found' });
     
-    // Add to beginning of history
     user.history.unshift({ videoId, title, thumbnail, artist, playedAt: new Date() });
     
-    // Keep only last 50 songs
     if (user.history.length > 50) {
       user.history = user.history.slice(0, 50);
     }
@@ -41,7 +39,6 @@ exports.likeSong = async (req, res) => {
     
     if (!user) return res.status(404).json({ msg: 'User not found' });
     
-    // Toggle liked status
     const existsIndex = user.likedSongs.findIndex(song => song.videoId === videoId);
     let isLiked = false;
     
