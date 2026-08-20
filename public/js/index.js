@@ -176,7 +176,7 @@ document.getElementById('cameraIcon').addEventListener('click', () => {
 
 document.getElementById('creditIcon').addEventListener('click', () => {
     if (confirm('Open Profile?')) {
-        window.open('https://utkarshcs.vercel.app/', '_blank');
+        window.open('https://heyutkarsh.site/', '_blank');
     }
 });
 
